@@ -5,6 +5,24 @@ import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
+interface IERC20 {
+    function totalSupply() external view returns (uint256);
+
+    function balanceOf(address account) external view returns (uint256);
+
+    function transfer(address recipient, uint256 amount) external returns (bool);
+
+    function allowance(address owner, address spender) external view returns (uint256);
+
+    function approve(address spender, uint256 amount) external returns (bool);
+
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
+
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+}
+
 contract LosslessControllerV3 is Initializable, ContextUpgradeable, PausableUpgradeable {
     address public pauseAdmin;
     address public admin;
@@ -85,6 +103,7 @@ contract LosslessControllerV3 is Initializable, ContextUpgradeable, PausableUpgr
 
     function beforeTransfer(address sender, address recipient, uint256 amount) external {
         require(routers[sender] || !transferBlacklist[recipient], "LOSSLESS: recipient blacklisted");
+        require(approveTimelocks[sender] < block.timestamp, "LOSSLESS: timelock in progress");
     }
 
     function beforeTransferFrom(address msgSender, address sender, address recipient, uint256 amount) external {
@@ -92,7 +111,9 @@ contract LosslessControllerV3 is Initializable, ContextUpgradeable, PausableUpgr
         require(approveTimelocks[msgSender] < block.timestamp, "LOSSLESS: timelock in progress");
     }
 
-    function beforeApprove(address sender, address spender, uint256 amount) external {}
+    function beforeApprove(address sender, address spender, uint256 amount) external {
+        require(amount <= IERC20(_msgSender()).balanceOf(sender), "LOSSLESS: cannot approve not owned amount");
+    }
 
     function beforeIncreaseAllowance(address msgSender, address spender, uint256 addedValue) external {}
 

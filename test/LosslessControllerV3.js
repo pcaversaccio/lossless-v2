@@ -365,7 +365,7 @@ function regularERC20() {
             });
           });
 
-          describe('when the sender does not have enough balance', () => {
+          describe.skip('when the sender does not have enough balance', () => {
             it('emits an approval event', async () => {
               await expect(
                 token
@@ -513,7 +513,7 @@ function regularERC20() {
         shouldDecreaseApproval(amount);
       });
 
-      describe('when the sender does not have enough balance', () => {
+      describe.skip('when the sender does not have enough balance', () => {
         const amount = initialBalance + 1;
 
         shouldDecreaseApproval(amount);
@@ -572,7 +572,7 @@ function regularERC20() {
         });
       });
 
-      describe('when the sender does not have enough balance', () => {
+      describe.skip('when the sender does not have enough balance', () => {
         it('emits an approval event', async () => {
           await expect(
             token
@@ -799,7 +799,7 @@ function regularERC20() {
           });
         });
 
-        describe('when the sender does not have enough balance', () => {
+        describe.skip('when the sender does not have enough balance', () => {
           it('emits an approval event', async () => {
             await expect(
               token.approveInternal(
@@ -1085,6 +1085,22 @@ describe.only('LosslessControllerV3', () => {
         .transferFrom(initialHolder.address, recipient.address, 1);
 
       expect(await token.balanceOf(recipient.address)).to.be.equal(1);
+    });
+  });
+
+  describe('do not allow approving more than balance', () => {
+    it('reverts', async () => {
+      await expect(
+        token.connect(initialHolder).approve(recipient.address, 101),
+      ).to.be.revertedWith('LOSSLESS: cannot approve not owned amount');
+    });
+
+    it('suceeds if approving less than balance', async () => {
+      await token.connect(initialHolder).approve(recipient.address, 50);
+
+      expect(
+        await token.allowance(initialHolder.address, recipient.address),
+      ).to.be.equal(50);
     });
   });
 
