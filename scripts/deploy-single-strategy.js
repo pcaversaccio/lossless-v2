@@ -1,7 +1,6 @@
 async function main() {
-  const LiquidityProtectionSingleLimitStrategy = await ethers.getContractFactory(
-    'LiquidityProtectionSingleLimitStrategy',
-  );
+  const LiquidityProtectionSingleLimitStrategy =
+    await ethers.getContractFactory('LiquidityProtectionSingleLimitStrategy');
 
   const strategy = await LiquidityProtectionSingleLimitStrategy.deploy(
     '0xb561df98e00DF9Fa530848d7aA6beBa803a15DBD',

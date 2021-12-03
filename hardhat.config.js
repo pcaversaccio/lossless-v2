@@ -41,8 +41,7 @@ module.exports = {
       },
     },
     ropsten: {
-      url:
-        'https://speedy-nodes-nyc.moralis.io/6743a8ce6ffa15b496454e17/eth/ropsten',
+      url: 'https://speedy-nodes-nyc.moralis.io/6743a8ce6ffa15b496454e17/eth/ropsten',
       accounts: [`0x${ROPSTEN_PRIVATE_KEY}`],
     },
     rinkeby: {

@@ -846,7 +846,7 @@ describe('LiquidityProtectionSingleLimitStrategy', () => {
         await vars.erc20s[0]
           .connect(vars.initialHolder)
           .transfer(vars.recipient.address, 9);
-      
+
         await ethers.provider.send('evm_increaseTime', [
           Number(time.duration.seconds(305)),
         ]);
@@ -869,9 +869,9 @@ describe('LiquidityProtectionSingleLimitStrategy', () => {
         await vars.erc20s[0]
           .connect(vars.initialHolder)
           .transfer(vars.recipient.address, 9);
-          await ethers.provider.send('evm_increaseTime', [
-    Number(time.duration.seconds(300)),
-  ]);
+        await ethers.provider.send('evm_increaseTime', [
+          Number(time.duration.seconds(300)),
+        ]);
         await vars.erc20s[0]
           .connect(vars.initialHolder)
           .transfer(vars.recipient.address, 9);
@@ -888,15 +888,15 @@ describe('LiquidityProtectionSingleLimitStrategy', () => {
         await vars.erc20s[0]
           .connect(vars.initialHolder)
           .transfer(vars.recipient.address, 9);
-          await ethers.provider.send('evm_increaseTime', [
-    Number(time.duration.seconds(301)),
-  ]);
+        await ethers.provider.send('evm_increaseTime', [
+          Number(time.duration.seconds(301)),
+        ]);
         await vars.erc20s[0]
           .connect(vars.initialHolder)
           .transfer(vars.recipient.address, 9);
-          await ethers.provider.send('evm_increaseTime', [
-    Number(time.duration.seconds(301)),
-  ]);
+        await ethers.provider.send('evm_increaseTime', [
+          Number(time.duration.seconds(301)),
+        ]);
         await vars.erc20s[0]
           .connect(vars.initialHolder)
           .transfer(vars.recipient.address, 2);
@@ -925,16 +925,16 @@ describe('LiquidityProtectionSingleLimitStrategy', () => {
         await vars.erc20s[0]
           .connect(vars.initialHolder)
           .transfer(vars.recipient.address, 1);
-          await ethers.provider.send('evm_increaseTime', [
-    Number(time.duration.seconds(300)),
-  ]);
+        await ethers.provider.send('evm_increaseTime', [
+          Number(time.duration.seconds(300)),
+        ]);
 
         await vars.erc20s[0]
           .connect(vars.initialHolder)
           .transfer(vars.recipient.address, 2);
-          await ethers.provider.send('evm_increaseTime', [
-    Number(time.duration.seconds(300)),
-  ]);
+        await ethers.provider.send('evm_increaseTime', [
+          Number(time.duration.seconds(300)),
+        ]);
 
         await vars.erc20s[0]
           .connect(vars.initialHolder)
@@ -968,9 +968,9 @@ describe('LiquidityProtectionSingleLimitStrategy', () => {
             .connect(vars.initialHolder)
             .transfer(vars.anotherAccount.address, 2),
         ).to.be.revertedWith('LOSSLESS: Strategy Limit reached');
-          await ethers.provider.send('evm_increaseTime', [
-    Number(time.duration.seconds(301)),
-  ]);
+        await ethers.provider.send('evm_increaseTime', [
+          Number(time.duration.seconds(301)),
+        ]);
 
         await vars.erc20s[0]
           .connect(vars.initialHolder)
@@ -1100,9 +1100,9 @@ describe('LiquidityProtectionSingleLimitStrategy', () => {
         await vars.erc20s[0]
           .connect(vars.oneMoreAccount)
           .transferFrom(vars.initialHolder.address, vars.recipient.address, 9);
-          await ethers.provider.send('evm_increaseTime', [
-    Number(time.duration.seconds(301)),
-  ]);
+        await ethers.provider.send('evm_increaseTime', [
+          Number(time.duration.seconds(301)),
+        ]);
         await vars.erc20s[0]
           .connect(vars.oneMoreAccount)
           .transferFrom(vars.initialHolder.address, vars.recipient.address, 9);
@@ -1123,9 +1123,9 @@ describe('LiquidityProtectionSingleLimitStrategy', () => {
         await vars.erc20s[0]
           .connect(vars.oneMoreAccount)
           .transferFrom(vars.initialHolder.address, vars.recipient.address, 9);
-          await ethers.provider.send('evm_increaseTime', [
-    Number(time.duration.seconds(300)),
-  ]);
+        await ethers.provider.send('evm_increaseTime', [
+          Number(time.duration.seconds(300)),
+        ]);
         await vars.erc20s[0]
           .connect(vars.oneMoreAccount)
           .transferFrom(vars.initialHolder.address, vars.recipient.address, 9);
@@ -1146,15 +1146,15 @@ describe('LiquidityProtectionSingleLimitStrategy', () => {
         await vars.erc20s[0]
           .connect(vars.oneMoreAccount)
           .transferFrom(vars.initialHolder.address, vars.recipient.address, 9);
-          await ethers.provider.send('evm_increaseTime', [
-    Number(time.duration.seconds(301)),
-  ]);
+        await ethers.provider.send('evm_increaseTime', [
+          Number(time.duration.seconds(301)),
+        ]);
         await vars.erc20s[0]
           .connect(vars.oneMoreAccount)
           .transferFrom(vars.initialHolder.address, vars.recipient.address, 9);
-          await ethers.provider.send('evm_increaseTime', [
-    Number(time.duration.seconds(301)),
-  ]);
+        await ethers.provider.send('evm_increaseTime', [
+          Number(time.duration.seconds(301)),
+        ]);
         await vars.erc20s[0]
           .connect(vars.oneMoreAccount)
           .transferFrom(vars.initialHolder.address, vars.recipient.address, 2);
@@ -1183,16 +1183,16 @@ describe('LiquidityProtectionSingleLimitStrategy', () => {
         await vars.erc20s[0]
           .connect(vars.oneMoreAccount)
           .transferFrom(vars.initialHolder.address, vars.recipient.address, 1);
-          await ethers.provider.send('evm_increaseTime', [
-    Number(time.duration.seconds(300)),
-  ]);
+        await ethers.provider.send('evm_increaseTime', [
+          Number(time.duration.seconds(300)),
+        ]);
 
         await vars.erc20s[0]
           .connect(vars.oneMoreAccount)
           .transferFrom(vars.initialHolder.address, vars.recipient.address, 2);
-          await ethers.provider.send('evm_increaseTime', [
-    Number(time.duration.seconds(300)),
-  ]);
+        await ethers.provider.send('evm_increaseTime', [
+          Number(time.duration.seconds(300)),
+        ]);
 
         await vars.erc20s[0]
           .connect(vars.oneMoreAccount)
@@ -1234,9 +1234,9 @@ describe('LiquidityProtectionSingleLimitStrategy', () => {
               2,
             ),
         ).to.be.revertedWith('LOSSLESS: Strategy Limit reached');
-          await ethers.provider.send('evm_increaseTime', [
-    Number(time.duration.seconds(301)),
-  ]);
+        await ethers.provider.send('evm_increaseTime', [
+          Number(time.duration.seconds(301)),
+        ]);
 
         await vars.erc20s[0]
           .connect(vars.oneMoreAccount)
@@ -1302,10 +1302,11 @@ describe('LiquidityProtectionSingleLimitStrategy', () => {
 
     it('should return limit data', async () => {
       const timeNumBefore = await ethers.provider.getBlock();
-      const firstAddressLimit1 = await protection.liquidityProtectionSingleLimitStrategy.getLimit(
-        vars.erc20s[0].address,
-        vars.oneMoreAccount.address,
-      );
+      const firstAddressLimit1 =
+        await protection.liquidityProtectionSingleLimitStrategy.getLimit(
+          vars.erc20s[0].address,
+          vars.oneMoreAccount.address,
+        );
 
       expect(firstAddressLimit1[0].toString()).to.be.equal('100');
       expect(firstAddressLimit1[1].toString()).to.be.equal(
@@ -1314,10 +1315,11 @@ describe('LiquidityProtectionSingleLimitStrategy', () => {
       expect(firstAddressLimit1[2].toString()).to.be.equal('10');
       expect(firstAddressLimit1[3].toString()).to.be.equal('10');
 
-      const secondAddressLimit1 = await protection.liquidityProtectionSingleLimitStrategy.getLimit(
-        vars.erc20s[0].address,
-        vars.initialHolder.address,
-      );
+      const secondAddressLimit1 =
+        await protection.liquidityProtectionSingleLimitStrategy.getLimit(
+          vars.erc20s[0].address,
+          vars.initialHolder.address,
+        );
 
       expect(secondAddressLimit1[0].toString()).to.be.equal('100');
       expect(secondAddressLimit1[1].toString()).to.be.equal(

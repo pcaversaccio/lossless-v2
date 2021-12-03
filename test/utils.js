@@ -88,22 +88,24 @@ const deployProtection = async (losslessController) => {
   const LosslessGuardian = await ethers.getContractFactory('LosslessGuardian');
   const guardian = await LosslessGuardian.deploy(losslessController.address);
 
-  const LiquidityProtectionMultipleLimitsStrategy = await ethers.getContractFactory(
-    'LiquidityProtectionMultipleLimitsStrategy',
-  );
+  const LiquidityProtectionMultipleLimitsStrategy =
+    await ethers.getContractFactory(
+      'LiquidityProtectionMultipleLimitsStrategy',
+    );
 
-  const liquidityProtectionMultipleLimitsStrategy = await LiquidityProtectionMultipleLimitsStrategy.deploy(
-    guardian.address,
-    losslessController.address,
-  );
+  const liquidityProtectionMultipleLimitsStrategy =
+    await LiquidityProtectionMultipleLimitsStrategy.deploy(
+      guardian.address,
+      losslessController.address,
+    );
 
-  const LiquidityProtectionSingleLimitStrategy = await ethers.getContractFactory(
-    'LiquidityProtectionSingleLimitStrategy',
-  );
-  const liquidityProtectionSingleLimitStrategy = await LiquidityProtectionSingleLimitStrategy.deploy(
-    guardian.address,
-    losslessController.address,
-  );
+  const LiquidityProtectionSingleLimitStrategy =
+    await ethers.getContractFactory('LiquidityProtectionSingleLimitStrategy');
+  const liquidityProtectionSingleLimitStrategy =
+    await LiquidityProtectionSingleLimitStrategy.deploy(
+      guardian.address,
+      losslessController.address,
+    );
 
   const TreasuryProtectionStrategy = await ethers.getContractFactory(
     'TreasuryProtectionStrategy',

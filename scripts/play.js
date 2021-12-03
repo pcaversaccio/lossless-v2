@@ -23,19 +23,21 @@ async function main() {
     '0x320b52291a56d4f219e37c828ec4f090197a62d8',
   );
 
-  const LiquidityProtectionMultipleLimitsStrategy = await ethers.getContractFactory(
-    'LiquidityProtectionMultipleLimitsStrategy',
-  );
-  const liquidityProtectionMultipleLimitsStrategy = await LiquidityProtectionMultipleLimitsStrategy.attach(
-    '0x3E1f2DF8846C799ee605a1C7D9FBF8291B036Ad9',
-  );
+  const LiquidityProtectionMultipleLimitsStrategy =
+    await ethers.getContractFactory(
+      'LiquidityProtectionMultipleLimitsStrategy',
+    );
+  const liquidityProtectionMultipleLimitsStrategy =
+    await LiquidityProtectionMultipleLimitsStrategy.attach(
+      '0x3E1f2DF8846C799ee605a1C7D9FBF8291B036Ad9',
+    );
 
-  const LiquidityProtectionSingleLimitStrategy = await ethers.getContractFactory(
-    'LiquidityProtectionSingleLimitStrategy',
-  );
-  const liquidityProtectionSingleLimitStrategy = await LiquidityProtectionSingleLimitStrategy.attach(
-    '0xe78b09814d4fF2F9deE1a9577C4498e4c5246882',
-  );
+  const LiquidityProtectionSingleLimitStrategy =
+    await ethers.getContractFactory('LiquidityProtectionSingleLimitStrategy');
+  const liquidityProtectionSingleLimitStrategy =
+    await LiquidityProtectionSingleLimitStrategy.attach(
+      '0xe78b09814d4fF2F9deE1a9577C4498e4c5246882',
+    );
 
   const TreasuryProtectionStrategy = await ethers.getContractFactory(
     'TreasuryProtectionStrategy',

@@ -247,12 +247,18 @@ describe('TreasuryProtectionStrategy', () => {
           );
 
         await expect(
-          protection.treasuryProtectionStrategy.connect(vars.guardianAdmin).setProtectedAddress(
-            vars.erc20s[1].address,
-            vars.initialHolder.address,
-            [vars.recipient.address],
-          ),
-        ).to.emit(protection.treasuryProtectionStrategy, 'WhitelistAddresses').withArgs(vars.erc20s[1].address, vars.initialHolder.address, [vars.recipient.address]);
+          protection.treasuryProtectionStrategy
+            .connect(vars.guardianAdmin)
+            .setProtectedAddress(
+              vars.erc20s[1].address,
+              vars.initialHolder.address,
+              [vars.recipient.address],
+            ),
+        )
+          .to.emit(protection.treasuryProtectionStrategy, 'WhitelistAddresses')
+          .withArgs(vars.erc20s[1].address, vars.initialHolder.address, [
+            vars.recipient.address,
+          ]);
       });
     });
   });
@@ -375,11 +381,18 @@ describe('TreasuryProtectionStrategy', () => {
           ),
         ).to.be.equal(true);
 
-        await expect(protection.treasuryProtectionStrategy
-          .connect(vars.guardianAdmin)
-          .removeProtectedAddresses(vars.erc20s[0].address, [
-            vars.initialHolder.address,
-          ])).to.emit(protection.treasuryProtectionStrategy, 'RemovedWhitelistAddresses').withArgs(vars.erc20s[0].address, [vars.initialHolder.address]);
+        await expect(
+          protection.treasuryProtectionStrategy
+            .connect(vars.guardianAdmin)
+            .removeProtectedAddresses(vars.erc20s[0].address, [
+              vars.initialHolder.address,
+            ]),
+        )
+          .to.emit(
+            protection.treasuryProtectionStrategy,
+            'RemovedWhitelistAddresses',
+          )
+          .withArgs(vars.erc20s[0].address, [vars.initialHolder.address]);
 
         expect(
           await vars.losslessController.isAddressProtected(

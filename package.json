@@ -6,6 +6,10 @@
   "scripts": {
     "test": " npx hardhat test",
     "coverage": "npx hardhat coverage",
+    "prettier:check": "prettier -c **/*.{js,ts}",
+    "prettier:fix": "prettier --write **/*.{js,ts}",
+    "solhint:check": "npx solhint 'contracts/**/*.sol'",
+    "solhint:fix": "npx solhint 'contracts/**/*.sol' --fix",
     "pair-address": "node ./utils/getNextUniAddress.js",
     "build": "npx waffle"
   },
@@ -24,6 +28,7 @@
     "hardhat": "2.7.0",
     "hardhat-abi-exporter": "^2.2.1",
     "hardhat-gas-reporter": "^1.0.4",
+    "solhint": "^3.3.6",
     "solidity-coverage": "^0.7.16"
   },
   "devDependencies": {
