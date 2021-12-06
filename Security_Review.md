@@ -44,7 +44,7 @@ Use the `external` attribute for functions never called from the contract.
 - `removeProtectedAddresses(address,address[])` should be declared external:
   - `TreasuryProtectionStrategy.removeProtectedAddresses(address,address[])` (contracts/TreasuryProtectionStrategy.sol#45-51)
 
-#### [`LosslessControllerV1.sol`](`https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LosslessControllerV1.sol`)
+#### [`LosslessControllerV1.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LosslessControllerV1.sol)
 - `initialize(address,address,address)` should be declared external:
   - `LosslessControllerV1.initialize(address,address,address)` (contracts/LosslessControllerV1.sol#29-33)
 - `pause()` should be declared external:
@@ -109,7 +109,7 @@ Check that the address is not zero.
 - `LERC20.constructor(uint256,string,string,address,address,uint256,address).recoveryAdmin_` (contracts/LERC20.sol#69) lacks a zero-check on:
   - `recoveryAdmin = recoveryAdmin_` (contracts/LERC20.sol#74)
 
-#### [`LosslessControllerV1.sol`](`https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LosslessControllerV1.sol`)
+#### [`LosslessControllerV1.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LosslessControllerV1.sol)
 - `LosslessControllerV1.initialize(address,address,address)._admin` (contracts/LosslessControllerV1.sol#29) lacks a zero-check on:
   - `admin = _admin` (contracts/LosslessControllerV1.sol#30)
 - `LosslessControllerV1.initialize(address,address,address)._recoveryAdmin` (contracts/LosslessControllerV1.sol#29) lacks a zero-check on:
@@ -123,7 +123,7 @@ Check that the address is not zero.
 - `LosslessControllerV1.setPauseAdmin(address).newPauseAdmin` (contracts/LosslessControllerV1.sol#57) lacks a zero-check on:
   - `pauseAdmin = newPauseAdmin` (contracts/LosslessControllerV1.sol#59)
 
-#### [`LosslessControllerV2.sol`](`https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LosslessControllerV2.sol`)
+#### [`LosslessControllerV2.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LosslessControllerV2.sol)
 - `LosslessControllerV2.setGuardian(address).newGuardian` (contracts/LosslessControllerV2.sol#116) lacks a zero-check on:
   - `guardian = newGuardian` (contracts/LosslessControllerV2.sol#118)
 
@@ -362,7 +362,7 @@ Solidity defines a [naming convention](https://docs.soliditylang.org/en/latest/s
 ### Recommendation
 Follow the Solidity [naming convention](https://docs.soliditylang.org/en/latest/style-guide.html#naming-conventions)-
 
-#### [`LosslessControllerV1.sol`](`https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LosslessControllerV1.sol`)
+#### [`LosslessControllerV1.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LosslessControllerV1.sol)
 - Parameter `LosslessControllerV1.initialize(address,address,address)._admin` (contracts/LosslessControllerV1.sol#29) is not in mixedCase
 - Parameter `LosslessControllerV1.initialize(address,address,address)._recoveryAdmin` (contracts/LosslessControllerV1.sol#29) is not in mixedCase
 - Parameter `LosslessControllerV1.initialize(address,address,address)._pauseAdmin` (contracts/LosslessControllerV1.sol#29) is not in mixedCase
@@ -395,5 +395,5 @@ Remove unused function parameters.
 #### [`TreasuryProtectionStrategy.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/TreasuryProtectionStrategy.sol)
 - Function parameter `uint256 amount` is unused in `TreasuryProtectionStrategy.isTransferAllowed(address,address,address,uint256)` (contracts/TreasuryProtectionStrategy.sol#29-82)
 
-#### [`LosslessControllerV2.sol`](`https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LosslessControllerV2.sol`)
+#### [`LosslessControllerV2.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LosslessControllerV2.sol)
 - Function parameter `address msgSender` is unused in `LosslessControllerV2.beforeTransferFrom(address,address,address,uint256)` (contracts/LosslessControllerV2.sol#151-33)
