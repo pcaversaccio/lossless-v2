@@ -1,3 +1,154 @@
+# High-Level Review 
+
+## Public functions that could be declared `external`
+
+### Description
+`public` functions that are never called by the contract should be declared `external` to save gas. However, if these functions are written in an agnostic way to serve as a standard pattern, a `public` function may also be considered as the right approach.
+
+### Recommendation
+Use the `external` attribute for functions never called from the contract.
+
+#### [`LERC20.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LERC20.sol)
+- `name()` should be declared external:
+  - `LERC20.name()` (contracts/LERC20.sol#176-178)
+- `symbol()` should be declared external:
+  - `LERC20.symbol()` (contracts/LERC20.sol#180-182)
+- `decimals()` should be declared external:
+  - `LERC20.decimals()` (contracts/LERC20.sol#184-186)
+- `totalSupply()` should be declared external:
+  - `LERC20.totalSupply()` (contracts/LERC20.sol#188-190)
+- `transfer(address,uint256)` should be declared external:
+  - `LERC20.transfer(address,uint256)` (contracts/LERC20.sol#196-199)
+- `allowance(address,address)` should be declared external:
+  - `LERC20.allowance(address,address)` (contracts/LERC20.sol#201-203)
+- `approve(address,uint256)` should be declared external:
+  - `LERC20.approve(address,uint256)` (contracts/LERC20.sol#205-209)
+- `transferFrom(address,address,uint256)` should be declared external:
+  - `LERC20.transferFrom(address,address,uint256)` (contracts/LERC20.sol#211-219)
+- `increaseAllowance(address,uint256)` should be declared external:
+  - `LERC20.increaseAllowance(address,uint256)` (contracts/LERC20.sol#221-224)
+- `decreaseAllowance(address,uint256)` should be declared external:
+  - `LERC20.decreaseAllowance(address,uint256)` (contracts/LERC20.sol#226-232)
+
+#### [`LERC20Mock.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LERC20Mock.sol)
+- `mint(address,uint256)` should be declared external:
+  - `LERC20Mock.mint(address,uint256)` (contracts/LERC20Mock.sol#21-23)
+- `transferInternal(address,address,uint256)` should be declared external:
+  - `LERC20Mock.transferInternal(address,address,uint256)` (contracts/LERC20Mock.sol#25-27)
+- `approveInternal(address,address,uint256)` should be declared external:
+  - `LERC20Mock.approveInternal(address,address,uint256)` (contracts/LERC20Mock.sol#29-31)
+
+#### [`TreasuryProtectionStrategy.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/TreasuryProtectionStrategy.sol)
+- `setProtectedAddress(address,address,address[])` should be declared external:
+  - `TreasuryProtectionStrategy.setProtectedAddress(address,address,address[])` (contracts/TreasuryProtectionStrategy.sol#36-42)
+- `removeProtectedAddresses(address,address[])` should be declared external:
+  - `TreasuryProtectionStrategy.removeProtectedAddresses(address,address[])` (contracts/TreasuryProtectionStrategy.sol#45-51)
+
+#### [`LosslessControllerV1.sol`](`https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LosslessControllerV1.sol`)
+- `initialize(address,address,address)` should be declared external:
+  - `LosslessControllerV1.initialize(address,address,address)` (contracts/LosslessControllerV1.sol#29-33)
+- `pause()` should be declared external:
+  - `LosslessControllerV1.pause()` (contracts/LosslessControllerV1.sol#37-40)
+- `unpause()` should be declared external:
+  - `LosslessControllerV1.unpause()` (contracts/LosslessControllerV1.sol#42-45)
+- `setAdmin(address)` should be declared external:
+  - `LosslessControllerV1.setAdmin(address)` (contracts/LosslessControllerV1.sol#47-50)
+- `setRecoveryAdmin(address)` should be declared external:
+  - `LosslessControllerV1.setRecoveryAdmin(address)` (contracts/LosslessControllerV1.sol#52-55)
+- `setPauseAdmin(address)` should be declared external:
+  - `LosslessControllerV1.setPauseAdmin(address)` (contracts/LosslessControllerV1.sol#57-60)
+- `getVersion()` should be declared external:
+  - `LosslessControllerV1.getVersion()` (contracts/LosslessControllerV1.sol#64-66)
+
+## Contracts that lock Ether
+
+### Description
+Contract with a `payable` function, but without a withdrawal capacity.
+
+### Recommendation
+Remove the `payable` attribute or add a withdraw function.
+
+#### [`LERC20Mock.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LERC20Mock.sol)
+- Contract `LERC20Mock` (contracts/LERC20Mock.sol#6-33) has `payable` functions but does not have a function to withdraw the ether:
+  - `LERC20Mock.constructor(uint256,string,string,address,uint256,address,address,address,uint256)` (contracts/LERC20Mock.sol#7-19)
+
+## Deletion on mapping containing a structure
+
+### Description
+A deletion in a structure containing a mapping will not delete the mapping (see the [Solidity documentation](https://solidity.readthedocs.io/en/latest/types.html#delete)). The remaining data may be used to compromise the contract.
+
+### Recommendation
+Use a lock mechanism instead of a deletion to disable structure containing a mapping.
+
+#### [`TreasuryProtectionStrategy.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/TreasuryProtectionStrategy.sol)
+- `TreasuryProtectionStrategy.removeProtectedAddresses(address,address[])` (contracts/TreasuryProtectionStrategy.sol#45-51) deletes `TreasuryProtectionStrategy.Whitelist` (contracts/TreasuryProtectionStrategy.sol#9-11) which contains a mapping:
+  - `delete protectedAddresses[token].protection[addressesToRemove[i]]` (contracts/TreasuryProtectionStrategy.sol#47)
+
+## Uninitialized local variables
+
+### Description
+Uninitialized local variables.
+
+### Recommendation
+Initialize all the variables. If a variable is meant to be initialized to zero, explicitly set it to zero to improve code readability.
+
+#### [`LiquidityProtectionMultipleLimitsStrategy.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LiquidityProtectionMultipleLimitsStrategy.sol)
+- `LiquidityProtectionMultipleLimitsStrategy.saveLimits(address,address,uint256[],uint256[],uint256[]).limit` (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#133) is a local variable never initialized.
+
+## Missing zero address validation
+
+### Description
+Detect missing zero address validation.
+
+### Recommendation
+Check that the address is not zero.
+
+#### [`LERC20Mock.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LERC20Mock.sol)
+- `LERC20.constructor(uint256,string,string,address,address,uint256,address).admin_` (contracts/LERC20.sol#69) lacks a zero-check on:
+  - `admin = admin_` (contracts/LERC20.sol#73)
+- `LERC20.constructor(uint256,string,string,address,address,uint256,address).recoveryAdmin_` (contracts/LERC20.sol#69) lacks a zero-check on:
+  - `recoveryAdmin = recoveryAdmin_` (contracts/LERC20.sol#74)
+
+#### [`LosslessControllerV1.sol`](`https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LosslessControllerV1.sol`)
+- `LosslessControllerV1.initialize(address,address,address)._admin` (contracts/LosslessControllerV1.sol#29) lacks a zero-check on:
+  - `admin = _admin` (contracts/LosslessControllerV1.sol#30)
+- `LosslessControllerV1.initialize(address,address,address)._recoveryAdmin` (contracts/LosslessControllerV1.sol#29) lacks a zero-check on:
+  - `recoveryAdmin = _recoveryAdmin` (contracts/LosslessControllerV1.sol#31)
+- `LosslessControllerV1.initialize(address,address,address)._pauseAdmin` (contracts/LosslessControllerV1.sol#29) lacks a zero-check on:
+  - `pauseAdmin = _pauseAdmin` (contracts/LosslessControllerV1.sol#32)
+- `LosslessControllerV1.setAdmin(address).newAdmin` (contracts/LosslessControllerV1.sol#47) lacks a zero-check on:
+  - `admin = newAdmin` (contracts/LosslessControllerV1.sol#49)
+- `LosslessControllerV1.setRecoveryAdmin(address).newRecoveryAdmin` (contracts/LosslessControllerV1.sol#52) lacks a zero-check on:
+  - `recoveryAdmin = newRecoveryAdmin` (contracts/LosslessControllerV1.sol#54)
+- `LosslessControllerV1.setPauseAdmin(address).newPauseAdmin` (contracts/LosslessControllerV1.sol#57) lacks a zero-check on:
+  - `pauseAdmin = newPauseAdmin` (contracts/LosslessControllerV1.sol#59)
+
+#### [`LosslessControllerV2.sol`](`https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LosslessControllerV2.sol`)
+- `LosslessControllerV2.setGuardian(address).newGuardian` (contracts/LosslessControllerV2.sol#116) lacks a zero-check on:
+  - `guardian = newGuardian` (contracts/LosslessControllerV2.sol#118)
+
+## Calls inside a loop
+
+### Description
+Calls inside a loop might lead to a denial-of-service attack.
+
+### Recommendation
+Favor [pull over push](https://eth.wiki/en/howto/smart-contract-safety#favor-pull-over-push-for-external-calls) strategy for external calls.
+
+#### [`LiquidityProtectionMultipleLimitsStrategy.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LiquidityProtectionMultipleLimitsStrategy.sol)
+- `LiquidityProtectionMultipleLimitsStrategy.setLimitsBatched(address,address[],uint256[],uint256[],uint256[])` (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#45-56) has `external` calls inside a loop: `guardian.setProtectedAddress(token,protectedAddresses[i])` (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#53)
+- `LiquidityProtectionMultipleLimitsStrategy.removeLimits(address,address[])` (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#58-63) has `external` calls inside a loop: `guardian.removeProtectedAddresses(token,protectedAddresses[i])` (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#61)
+
+#### [`LiquidityProtectionSingleLimitStrategy`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LiquidityProtectionSingleLimitStrategy.sol)
+- `LiquidityProtectionSingleLimitStrategy.setLimitBatched(address,address[],uint256,uint256,uint256)` (contracts/LiquidityProtectionSingleLimitStrategy.sol#37-48) has `external` calls inside a loop: `guardian.setProtectedAddress(token,protectedAddresses[i])` (contracts/LiquidityProtectionSingleLimitStrategy.sol#46)
+- `LiquidityProtectionSingleLimitStrategy.removeLimits(address,address[])` (contracts/LiquidityProtectionSingleLimitStrategy.sol#64-69) has `external` calls inside a loop: `guardian.removeProtectedAddresses(token,protectedAddresses[i])` (contracts/LiquidityProtectionSingleLimitStrategy.sol#67)
+
+#### [`TreasuryProtectionStrategy.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/TreasuryProtectionStrategy.sol)
+- `TreasuryProtectionStrategy.removeProtectedAddresses(address,address[])` (contracts/TreasuryProtectionStrategy.sol#45-51) has `external` calls inside a loop: `guardian.removeProtectedAddresses(token,addressesToRemove[i])` (contracts/TreasuryProtectionStrategy.sol#48)
+
+
+
+
 ```bash
 Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
    --> contracts/LiquidityProtectionMultipleLimitsStrategy.sol:101:63:
@@ -26,65 +177,6 @@ Warning: Unused function parameter. Remove or comment out the variable name to s
 151 |     function beforeTransferFrom(address msgSender, address sender, address recipient, uint256 amount) external {
     |                                 ^^^^^^^^^^^^^^^^^
 
-
-
-
-PausableUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol#97) shadows:
-        - ContextUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#31)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#state-variable-shadowing
-
-Contract locking ether found:
-        Contract LERC20Mock (contracts/LERC20Mock.sol#6-33) has payable functions:
-         - LERC20Mock.constructor(uint256,string,string,address,uint256,address,address,address,uint256) (contracts/LERC20Mock.sol#7-19)
-        But does not have a function to withdraw the ether
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#contracts-that-lock-ether
-
-TreasuryProtectionStrategy.removeProtectedAddresses(address,address[]) (contracts/TreasuryProtectionStrategy.sol#45-51) deletes TreasuryProtectionStrategy.Whitelist (contracts/TreasuryProtectionStrategy.sol#9-11) which contains a mapping:
-        -delete protectedAddresses[token].protection[addressesToRemove[i]] (contracts/TreasuryProtectionStrategy.sol#47)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#deletion-on-mapping-containing-a-structure
-
-LiquidityProtectionMultipleLimitsStrategy.saveLimits(address,address,uint256[],uint256[],uint256[]).limit (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#133) is a local variable never initialized
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#uninitialized-local-variables
-
-LERC20Mock.constructor(uint256,string,string,address,uint256,address,address,address,uint256).totalSupply (contracts/LERC20Mock.sol#8) shadows:
-        - LERC20.totalSupply() (contracts/LERC20.sol#188-190) (function)
-        - IERC20.totalSupply() (contracts/LERC20.sol#16) (function)
-LERC20Mock.constructor(uint256,string,string,address,uint256,address,address,address,uint256).name (contracts/LERC20Mock.sol#9) shadows:
-        - LERC20.name() (contracts/LERC20.sol#176-178) (function)
-LERC20Mock.constructor(uint256,string,string,address,uint256,address,address,address,uint256).symbol (contracts/LERC20Mock.sol#10) shadows:
-        - LERC20.symbol() (contracts/LERC20.sol#180-182) (function)
-LERC20Mock.constructor(uint256,string,string,address,uint256,address,address,address,uint256).admin (contracts/LERC20Mock.sol#14) shadows:
-        - LERC20.admin (contracts/LERC20.sol#55) (state variable)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#local-variable-shadowing
-
-LERC20.constructor(uint256,string,string,address,address,uint256,address).admin_ (contracts/LERC20.sol#69) lacks a zero-check on :
-                - admin = admin_ (contracts/LERC20.sol#73)
-LERC20.constructor(uint256,string,string,address,address,uint256,address).recoveryAdmin_ (contracts/LERC20.sol#69) lacks a zero-check on :
-                - recoveryAdmin = recoveryAdmin_ (contracts/LERC20.sol#74)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
-
-LosslessControllerV1.initialize(address,address,address)._admin (contracts/LosslessControllerV1.sol#29) lacks a zero-check on :
-                - admin = _admin (contracts/LosslessControllerV1.sol#30)
-LosslessControllerV1.initialize(address,address,address)._recoveryAdmin (contracts/LosslessControllerV1.sol#29) lacks a zero-check on :
-                - recoveryAdmin = _recoveryAdmin (contracts/LosslessControllerV1.sol#31)
-LosslessControllerV1.initialize(address,address,address)._pauseAdmin (contracts/LosslessControllerV1.sol#29) lacks a zero-check on :
-                - pauseAdmin = _pauseAdmin (contracts/LosslessControllerV1.sol#32)
-LosslessControllerV1.setAdmin(address).newAdmin (contracts/LosslessControllerV1.sol#47) lacks a zero-check on :
-                - admin = newAdmin (contracts/LosslessControllerV1.sol#49)
-LosslessControllerV1.setRecoveryAdmin(address).newRecoveryAdmin (contracts/LosslessControllerV1.sol#52) lacks a zero-check on :
-                - recoveryAdmin = newRecoveryAdmin (contracts/LosslessControllerV1.sol#54)
-LosslessControllerV1.setPauseAdmin(address).newPauseAdmin (contracts/LosslessControllerV1.sol#57) lacks a zero-check on :
-                - pauseAdmin = newPauseAdmin (contracts/LosslessControllerV1.sol#59)
-LosslessControllerV2.setGuardian(address).newGuardian (contracts/LosslessControllerV2.sol#116) lacks a zero-check on :
-                - guardian = newGuardian (contracts/LosslessControllerV2.sol#118)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
-
-LiquidityProtectionMultipleLimitsStrategy.setLimitsBatched(address,address[],uint256[],uint256[],uint256[]) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#45-56) has external calls inside a loop: guardian.setProtectedAddress(token,protectedAddresses[i]) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#53)
-LiquidityProtectionMultipleLimitsStrategy.removeLimits(address,address[]) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#58-63) has external calls inside a loop: guardian.removeProtectedAddresses(token,protectedAddresses[i]) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#61)
-LiquidityProtectionSingleLimitStrategy.setLimitBatched(address,address[],uint256,uint256,uint256) (contracts/LiquidityProtectionSingleLimitStrategy.sol#37-48) has external calls inside a loop: guardian.setProtectedAddress(token,protectedAddresses[i]) (contracts/LiquidityProtectionSingleLimitStrategy.sol#46)
-LiquidityProtectionSingleLimitStrategy.removeLimits(address,address[]) (contracts/LiquidityProtectionSingleLimitStrategy.sol#64-69) has external calls inside a loop: guardian.removeProtectedAddresses(token,protectedAddresses[i]) (contracts/LiquidityProtectionSingleLimitStrategy.sol#67)
-TreasuryProtectionStrategy.removeProtectedAddresses(address,address[]) (contracts/TreasuryProtectionStrategy.sol#45-51) has external calls inside a loop: guardian.removeProtectedAddresses(token,addressesToRemove[i]) (contracts/TreasuryProtectionStrategy.sol#48)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation/#calls-inside-a-loop
 
 Reentrancy in LERC20.approve(address,uint256) (contracts/LERC20.sol#205-209):
         External calls:
@@ -341,24 +433,6 @@ Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-t
 Context._msgData() (contracts/LERC20.sol#9-12) is never used and should be removed
 Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dead-code
 
-Pragma version^0.8.0 (contracts/LERC20.sol#2) necessitates a version too recent to be trusted. Consider deploying with 0.6.12/0.7.6
-Pragma version^0.8.0 (contracts/LERC20Mock.sol#2) necessitates a version too recent to be trusted. Consider deploying with 0.6.12/0.7.6
-Pragma version^0.8.0 (contracts/LosslessGuardian.sol#2) necessitates a version too recent to be trusted. Consider deploying with 0.6.12/0.7.6
-solc-0.8.9 is not recommended for deployment
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
-
-Pragma version^0.8.0 (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#2) necessitates a version too recent to be trusted. Consider deploying with 0.6.12/0.7.6     
-Pragma version^0.8.0 (contracts/LiquidityProtectionSingleLimitStrategy.sol#2) necessitates a version too recent to be trusted. Consider deploying with 0.6.12/0.7.6        
-Pragma version^0.8.0 (contracts/StrategyBase.sol#2) necessitates a version too recent to be trusted. Consider deploying with 0.6.12/0.7.6
-Pragma version^0.8.0 (contracts/TreasuryProtectionStrategy.sol#2) necessitates a version too recent to be trusted. Consider deploying with 0.6.12/0.7.6
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
-
-Pragma version^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol#4) necessitates a version too recent to be trusted. Consider deploying with 0.6.12/0.7.6
-Pragma version^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol#4) necessitates a version too recent to be trusted. Consider deploying with 0.6.12/0.7.6
-Pragma version^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#4) necessitates a version too recent to be trusted. Consider deploying with 0.6.12/0.7.6
-Pragma version^0.8.0 (contracts/LosslessControllerV1.sol#2) necessitates a version too recent to be trusted. Consider deploying with 0.6.12/0.7.6
-Pragma version^0.8.0 (contracts/LosslessControllerV2.sol#2) necessitates a version too recent to be trusted. Consider deploying with 0.6.12/0.7.6
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
 
 Function PausableUpgradeable.__Pausable_init() (node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol#34-37) is not in mixedCase
 Function PausableUpgradeable.__Pausable_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol#39-41) is not in mixedCase     
@@ -381,54 +455,4 @@ Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#variabl
 PausableUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol#97) is never used in LosslessControllerV1 (contracts/LosslessControllerV1.sol#8-92)
 PausableUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol#97) is never used in LosslessControllerV2 (contracts/LosslessControllerV2.sol#12-177)
 Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unused-state-variable
-
-name() should be declared external:
-        - LERC20.name() (contracts/LERC20.sol#176-178)
-symbol() should be declared external:
-        - LERC20.symbol() (contracts/LERC20.sol#180-182)
-decimals() should be declared external:
-        - LERC20.decimals() (contracts/LERC20.sol#184-186)
-totalSupply() should be declared external:
-        - LERC20.totalSupply() (contracts/LERC20.sol#188-190)
-transfer(address,uint256) should be declared external:
-        - LERC20.transfer(address,uint256) (contracts/LERC20.sol#196-199)
-allowance(address,address) should be declared external:
-        - LERC20.allowance(address,address) (contracts/LERC20.sol#201-203)
-approve(address,uint256) should be declared external:
-        - LERC20.approve(address,uint256) (contracts/LERC20.sol#205-209)
-transferFrom(address,address,uint256) should be declared external:
-        - LERC20.transferFrom(address,address,uint256) (contracts/LERC20.sol#211-219)
-increaseAllowance(address,uint256) should be declared external:
-        - LERC20.increaseAllowance(address,uint256) (contracts/LERC20.sol#221-224)
-decreaseAllowance(address,uint256) should be declared external:
-        - LERC20.decreaseAllowance(address,uint256) (contracts/LERC20.sol#226-232)
-mint(address,uint256) should be declared external:
-        - LERC20Mock.mint(address,uint256) (contracts/LERC20Mock.sol#21-23)
-transferInternal(address,address,uint256) should be declared external:
-        - LERC20Mock.transferInternal(address,address,uint256) (contracts/LERC20Mock.sol#25-27)
-approveInternal(address,address,uint256) should be declared external:
-        - LERC20Mock.approveInternal(address,address,uint256) (contracts/LERC20Mock.sol#29-31)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#public-function-that-could-be-declared-external
-
-setProtectedAddress(address,address,address[]) should be declared external:
-        - TreasuryProtectionStrategy.setProtectedAddress(address,address,address[]) (contracts/TreasuryProtectionStrategy.sol#36-42)
-removeProtectedAddresses(address,address[]) should be declared external:
-        - TreasuryProtectionStrategy.removeProtectedAddresses(address,address[]) (contracts/TreasuryProtectionStrategy.sol#45-51)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#public-function-that-could-be-declared-external
-
-initialize(address,address,address) should be declared external:
-        - LosslessControllerV1.initialize(address,address,address) (contracts/LosslessControllerV1.sol#29-33)
-pause() should be declared external:
-        - LosslessControllerV1.pause() (contracts/LosslessControllerV1.sol#37-40)
-unpause() should be declared external:
-        - LosslessControllerV1.unpause() (contracts/LosslessControllerV1.sol#42-45)
-setAdmin(address) should be declared external:
-        - LosslessControllerV1.setAdmin(address) (contracts/LosslessControllerV1.sol#47-50)
-setRecoveryAdmin(address) should be declared external:
-        - LosslessControllerV1.setRecoveryAdmin(address) (contracts/LosslessControllerV1.sol#52-55)
-setPauseAdmin(address) should be declared external:
-        - LosslessControllerV1.setPauseAdmin(address) (contracts/LosslessControllerV1.sol#57-60)
-getVersion() should be declared external:
-        - LosslessControllerV1.getVersion() (contracts/LosslessControllerV1.sol#64-66)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#public-function-that-could-be-declared-external
 ```;
