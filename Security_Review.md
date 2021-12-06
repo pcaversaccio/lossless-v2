@@ -325,68 +325,75 @@ Apply the [checks-effects-interactions](https://docs.soliditylang.org/en/latest/
 ### Description
 Dangerous usage of `block.timestamp`. `block.timestamp` can be manipulated by miners.
 
-Recommendation
-Avoid relying on block.timestamp.
+### Recommendation
+Avoid relying on `block.timestamp`.
 
-```bash
-LERC20.executeLosslessTurnOff() (contracts/LERC20.sol#160-166) uses timestamp for comparisons
-        Dangerous comparisons:
-        - require(bool,string)(losslessTurnOffTimestamp <= block.timestamp,LERC20: Time lock in progress) (contracts/LERC20.sol#162)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+#### [`LERC20.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LERC20.sol)
+- `LERC20.executeLosslessTurnOff()` (contracts/LERC20.sol#160-166) uses timestamp for comparisons
+  - Dangerous comparisons:
+    - `require(bool,string)(losslessTurnOffTimestamp <= block.timestamp,LERC20: Time lock in progress)` (contracts/LERC20.sol#162)
 
-LiquidityProtectionMultipleLimitsStrategy.isTransferAllowed(address,address,address,uint256) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#101-120) uses timestamp for comparisons
-        Dangerous comparisons:
-        - limit.lastCheckpointTime + limit.periodInSeconds > block.timestamp (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#109)
-LiquidityProtectionSingleLimitStrategy.isTransferAllowed(address,address,address,uint256) (contracts/LiquidityProtectionSingleLimitStrategy.sol#85-100) uses timestamp for comparisons
-        Dangerous comparisons:
-        - limit.lastCheckpointTime + limit.periodInSeconds > block.timestamp (contracts/LiquidityProtectionSingleLimitStrategy.sol#90)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+#### [`LiquidityProtectionSingleLimitStrategy`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LiquidityProtectionSingleLimitStrategy.sol)
+- `LiquidityProtectionSingleLimitStrategy.isTransferAllowed(address,address,address,uint256)` (contracts/LiquidityProtectionSingleLimitStrategy.sol#85-100) uses timestamp for comparisons
+  - Dangerous comparisons:
+    - `limit.lastCheckpointTime + limit.periodInSeconds > block.timestamp` (contracts/LiquidityProtectionSingleLimitStrategy.sol#90)
 
-Context._msgData() (contracts/LERC20.sol#9-12) is never used and should be removed
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dead-code
+#### [`LiquidityProtectionMultipleLimitsStrategy.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LiquidityProtectionMultipleLimitsStrategy.sol)
+- `LiquidityProtectionMultipleLimitsStrategy.isTransferAllowed(address,address,address,uint256)` (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#101-120) uses timestamp for comparisons
+  - Dangerous comparisons:
+    - `limit.lastCheckpointTime + limit.periodInSeconds > block.timestamp` (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#109)
 
+## Dead Code
 
-Parameter LosslessControllerV1.initialize(address,address,address)._admin (contracts/LosslessControllerV1.sol#29) is not in mixedCase
-Parameter LosslessControllerV1.initialize(address,address,address)._recoveryAdmin (contracts/LosslessControllerV1.sol#29) is not in mixedCase
-Parameter LosslessControllerV1.initialize(address,address,address)._pauseAdmin (contracts/LosslessControllerV1.sol#29) is not in mixedCase
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+### Description
+Functions that are not used.
 
-Redundant expression "this (contracts/LERC20.sol#10)" inContext (contracts/LERC20.sol#4-13)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#redundant-statements
+### Recommendation
+Remove unused functions.
 
-Variable LERC20._totalSupply (contracts/LERC20.sol#48) is too similar to LERC20.constructor(uint256,string,string,address,address,uint256,address).totalSupply_ (contracts/LERC20.sol#69)
-Variable LERC20Mock.constructor(uint256,string,string,address,uint256,address,address,address,uint256)._timelockPeriod (contracts/LERC20Mock.sol#16) is too similar to LERC20.constructor(uint256,string,string,address,address,uint256,address).timelockPeriod_ (contracts/LERC20.sol#69)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#variable-names-are-too-similar
+#### [`LERC20.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LERC20.sol)
+- `Context._msgData()` (contracts/LERC20.sol#9-12) is never used and should be removed
 
-PausableUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol#97) is never used in LosslessControllerV1 (contracts/LosslessControllerV1.sol#8-92)
-PausableUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol#97) is never used in LosslessControllerV2 (contracts/LosslessControllerV2.sol#12-177)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unused-state-variable
+## Conformance to Solidity naming conventions
 
-Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
-   --> contracts/LiquidityProtectionMultipleLimitsStrategy.sol:101:63:
-    |
-101 |     function isTransferAllowed(address token, address sender, address recipient, uint256 amount) external {
-    |                                                               ^^^^^^^^^^^^^^^^^
+### Description
+Solidity defines a [naming convention](https://docs.soliditylang.org/en/latest/style-guide.html#naming-conventions) that should be followed.
 
+### Recommendation
+Follow the Solidity [naming convention](https://docs.soliditylang.org/en/latest/style-guide.html#naming-conventions)-
 
-Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
-  --> contracts/LiquidityProtectionSingleLimitStrategy.sol:85:63:
-   |
-85 |     function isTransferAllowed(address token, address sender, address recipient, uint256 amount) external {
-   |                                                               ^^^^^^^^^^^^^^^^^
+#### [`LosslessControllerV1.sol`](`https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LosslessControllerV1.sol`)
+- Parameter `LosslessControllerV1.initialize(address,address,address)._admin` (contracts/LosslessControllerV1.sol#29) is not in mixedCase
+- Parameter `LosslessControllerV1.initialize(address,address,address)._recoveryAdmin` (contracts/LosslessControllerV1.sol#29) is not in mixedCase
+- Parameter `LosslessControllerV1.initialize(address,address,address)._pauseAdmin` (contracts/LosslessControllerV1.sol#29) is not in mixedCase
 
+## Redundant Statements
 
-Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
-  --> contracts/TreasuryProtectionStrategy.sol:29:82:
-   |
-29 |     function isTransferAllowed(address token, address sender, address recipient, uint256 amount) external view {
-   |                                                                                  ^^^^^^^^^^^^^^
+### Description
+Detect the usage of redundant statements that have no effect.
 
+### Recommendation
+Remove redundant statements if they congest code but offer no value.
 
-Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
-   --> contracts/LosslessControllerV2.sol:151:33:
-    |
-151 |     function beforeTransferFrom(address msgSender, address sender, address recipient, uint256 amount) external {
-    |                                 ^^^^^^^^^^^^^^^^^
+#### [`LERC20.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LERC20.sol)
+- Redundant expression "this (contracts/LERC20.sol#10)" in Context (contracts/LERC20.sol#4-13)
 
-```
+## Unused function parameters
+
+### Description
+Function parameters that are not used.
+
+### Recommendation
+Remove unused function parameters.
+
+#### [`LiquidityProtectionMultipleLimitsStrategy.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LiquidityProtectionMultipleLimitsStrategy.sol)
+- Function parameter `address recipient` is unused in `LiquidityProtectionMultipleLimitsStrategy.isTransferAllowed(address,address,address,uint256)` (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#101-63):
+
+#### [`LiquidityProtectionSingleLimitStrategy`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LiquidityProtectionSingleLimitStrategy.sol)
+- Function parameter `address recipient` is unused in `LiquidityProtectionSingleLimitStrategy.isTransferAllowed(address,address,address,uint256)` (contracts/LiquidityProtectionSingleLimitsStrategy.sol#85-63):
+
+#### [`TreasuryProtectionStrategy.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/TreasuryProtectionStrategy.sol)
+- Function parameter `uint256 amount` is unused in `TreasuryProtectionStrategy.isTransferAllowed(address,address,address,uint256)` (contracts/TreasuryProtectionStrategy.sol#29-82)
+
+#### [`LosslessControllerV2.sol`](`https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LosslessControllerV2.sol`)
+- Function parameter `address msgSender` is unused in `LosslessControllerV2.beforeTransferFrom(address,address,address,uint256)` (contracts/LosslessControllerV2.sol#151-33)
