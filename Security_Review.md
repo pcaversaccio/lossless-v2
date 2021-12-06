@@ -376,7 +376,7 @@ Detect the usage of redundant statements that have no effect.
 Remove redundant statements if they congest code but offer no value.
 
 #### [`LERC20.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LERC20.sol)
-- Redundant expression "this (contracts/LERC20.sol#10)" in Context (contracts/LERC20.sol#4-13)
+- Redundant expression "`this` (contracts/LERC20.sol#10)" in Context (contracts/LERC20.sol#4-13)
 
 ## Unused function parameters
 
