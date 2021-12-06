@@ -146,7 +146,179 @@ Favor [pull over push](https://eth.wiki/en/howto/smart-contract-safety#favor-pul
 #### [`TreasuryProtectionStrategy.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/TreasuryProtectionStrategy.sol)
 - `TreasuryProtectionStrategy.removeProtectedAddresses(address,address[])` (contracts/TreasuryProtectionStrategy.sol#45-51) has `external` calls inside a loop: `guardian.removeProtectedAddresses(token,addressesToRemove[i])` (contracts/TreasuryProtectionStrategy.sol#48)
 
+## Reentrancy vulnerabilities
 
+### Description
+Detection of the reentrancy bug.
+
+### Recommendation
+Apply the [checks-effects-interactions](https://docs.soliditylang.org/en/latest/security-considerations.html#re-entrancy) pattern.
+
+#### [`LosslessGuardian.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LosslessGuardian.sol)
+- Reentrancy in `LosslessGuardian.verifyAddress(address,address,bool)` (contracts/LosslessGuardian.sol#78-81):
+  - External calls:
+    - `onlyLosslessAdmin()` (contracts/LosslessGuardian.sol#78)
+      - `require(bool,string)(msg.sender == lossless.admin(),LOSSLESS: Not lossless admin)` (contracts/LosslessGuardian.sol#41)
+  - State variables written after the call(s):
+    - `verifiedAddresses[token].verified[verifiedAddress] = value` (contracts/LosslessGuardian.sol#79)
+- Reentrancy in `LosslessGuardian.verifyStrategies(address[],bool)` (contracts/LosslessGuardian.sol#64-69):
+  - External calls:
+    - `onlyLosslessAdmin()` (contracts/LosslessGuardian.sol#64)
+      - `require(bool,string)(msg.sender == lossless.admin(),LOSSLESS: Not lossless admin)` (contracts/LosslessGuardian.sol#41)
+  - State variables written after the call(s):
+    - `verifiedStrategies[strategies[i]] = value` (contracts/LosslessGuardian.sol#66)
+- Reentrancy in `LosslessGuardian.verifyToken(address,bool)` (contracts/LosslessGuardian.sol#72-75):
+  - External calls:
+    - `onlyLosslessAdmin()` (contracts/LosslessGuardian.sol#72)
+      - `require(bool,string)(msg.sender == lossless.admin(),LOSSLESS: Not lossless admin)` (contracts/LosslessGuardian.sol#41)
+  - State variables written after the call(s):
+    - `verifiedTokens[token] = value` (contracts/LosslessGuardian.sol#73)
+- Reentrancy in `LosslessGuardian.verifyAddress(address,address,bool)` (contracts/LosslessGuardian.sol#78-81):
+  - External calls:
+    - `onlyLosslessAdmin()` (contracts/LosslessGuardian.sol#78)
+      - `require(bool,string)(msg.sender == lossless.admin(),LOSSLESS: Not lossless admin)` (contracts/LosslessGuardian.sol#41)
+  - Event emitted after the call(s):
+    - `AddressVerified(token,verifiedAddress,value)` (contracts/LosslessGuardian.sol#80)
+- Reentrancy in `LosslessGuardian.verifyStrategies(address[],bool)` (contracts/LosslessGuardian.sol#64-69):
+  - External calls:
+    - `onlyLosslessAdmin()` (contracts/LosslessGuardian.sol#64)
+      - `require(bool,string)(msg.sender == lossless.admin(),LOSSLESS: Not lossless admin)` (contracts/LosslessGuardian.sol#41)
+  - Event emitted after the call(s):
+    - `StrategyVerified(strategies[i],value)` (contracts/LosslessGuardian.sol#67)
+- Reentrancy in `LosslessGuardian.verifyToken(address,bool)` (contracts/LosslessGuardian.sol#72-75):
+  - External calls:
+    - `onlyLosslessAdmin()` (contracts/LosslessGuardian.sol#72)
+      - `require(bool,string)(msg.sender == lossless.admin(),LOSSLESS: Not lossless admin)` (contracts/LosslessGuardian.sol#41)
+  - Event emitted after the call(s):
+    - `TokenVerified(token,value)` (contracts/LosslessGuardian.sol#74)
+
+#### [`LiquidityProtectionMultipleLimitsStrategy.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LiquidityProtectionMultipleLimitsStrategy.sol)
+- Reentrancy in LiquidityProtectionMultipleLimitsStrategy.pause(address,address) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#67-81):
+        External calls:
+        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#67)
+                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
+        State variables written after the call(s):
+        - limits.push(cloneLimit(0,limits)) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#74)
+  
+- Reentrancy in LiquidityProtectionMultipleLimitsStrategy.removeLimits(address,address[]) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#58-63):
+        External calls:
+        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#58)
+                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
+        State variables written after the call(s):
+        - delete protection[token].limits[protectedAddresses[i]] (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#60)
+- Reentrancy in LiquidityProtectionMultipleLimitsStrategy.unpause(address,address) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#85-96):
+        External calls:
+        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#85)
+                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
+        State variables written after the call(s):
+        - limits[0] = cloneLimit(limits.length - 1,limits) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#91)
+- Reentrancy in LiquidityProtectionMultipleLimitsStrategy.pause(address,address) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#67-81):
+        External calls:
+        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#67)
+                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
+        Event emitted after the call(s):
+        - Paused(token,protectedAddress) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#80)
+- Reentrancy in LiquidityProtectionMultipleLimitsStrategy.setLimits(address,address,uint256[],uint256[],uint256[]) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#27-36):
+        External calls:
+        - guardian.setProtectedAddress(token,protectedAddress) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#34)
+        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#33)
+                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
+        State variables written after the call(s):
+        - saveLimits(token,protectedAddress,periodsInSeconds,amountsPerPeriod,startTimestamp) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#35)
+                - limits.push(limit) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#138)
+- Reentrancy in LiquidityProtectionMultipleLimitsStrategy.setLimitsBatched(address,address[],uint256[],uint256[],uint256[]) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#45-56):
+        External calls:
+        - guardian.setProtectedAddress(token,protectedAddresses[i]) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#53)
+        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#51)
+                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
+        State variables written after the call(s):
+        - saveLimits(token,protectedAddresses[i],periodsInSeconds,amountsPerPeriod,startTimestamp) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#54)
+                - limits.push(limit) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#138)
+- Reentrancy in LiquidityProtectionMultipleLimitsStrategy.unpause(address,address) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#85-96):
+        External calls:
+        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#85)
+                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
+        Event emitted after the call(s):
+        - Unpaused(token,protectedAddress) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#95)
+
+#### [`LiquidityProtectionSingleLimitStrategy`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/LiquidityProtectionSingleLimitStrategy.sol)
+- Reentrancy in LiquidityProtectionSingleLimitStrategy.pause(address,address) (contracts/LiquidityProtectionSingleLimitStrategy.sol#74-80):
+        External calls:
+        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionSingleLimitStrategy.sol#74)
+                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
+        State variables written after the call(s):
+        - limit.amountLeftInCurrentPeriod = 0 (contracts/LiquidityProtectionSingleLimitStrategy.sol#77)
+        - limit.lastCheckpointTime = type()(uint256).max - limit.periodInSeconds (contracts/LiquidityProtectionSingleLimitStrategy.sol#78)
+- Reentrancy in LiquidityProtectionSingleLimitStrategy.removeLimits(address,address[]) (contracts/LiquidityProtectionSingleLimitStrategy.sol#64-69):
+        External calls:
+        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionSingleLimitStrategy.sol#64)
+                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
+        State variables written after the call(s):
+        - delete protection[token].limits[protectedAddresses[i]] (contracts/LiquidityProtectionSingleLimitStrategy.sol#66)
+- Reentrancy in LiquidityProtectionSingleLimitStrategy.setLimit(address,address,uint256,uint256,uint256) (contracts/LiquidityProtectionSingleLimitStrategy.sol#52-62):       
+        External calls:
+        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionSingleLimitStrategy.sol#58)
+                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
+        State variables written after the call(s):
+        - saveLimit(token,protectedAddress,periodInSeconds,amountPerPeriod,startTimestamp) (contracts/LiquidityProtectionSingleLimitStrategy.sol#60)
+                - limit.periodInSeconds = periodInSeconds (contracts/LiquidityProtectionSingleLimitStrategy.sol#112)
+                - limit.amountPerPeriod = amountPerPeriod (contracts/LiquidityProtectionSingleLimitStrategy.sol#113)
+                - limit.lastCheckpointTime = startTimestamp (contracts/LiquidityProtectionSingleLimitStrategy.sol#114)
+                - limit.amountLeftInCurrentPeriod = amountPerPeriod (contracts/LiquidityProtectionSingleLimitStrategy.sol#115)
+- Reentrancy in LiquidityProtectionSingleLimitStrategy.setLimitBatched(address,address[],uint256,uint256,uint256) (contracts/LiquidityProtectionSingleLimitStrategy.sol#37-48):
+        External calls:
+        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionSingleLimitStrategy.sol#43)
+                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
+        State variables written after the call(s):
+        - saveLimit(token,protectedAddresses[i],periodInSeconds,amountPerPeriod,startTimestamp) (contracts/LiquidityProtectionSingleLimitStrategy.sol#45)
+                - limit.periodInSeconds = periodInSeconds (contracts/LiquidityProtectionSingleLimitStrategy.sol#112)
+                - limit.amountPerPeriod = amountPerPeriod (contracts/LiquidityProtectionSingleLimitStrategy.sol#113)
+                - limit.lastCheckpointTime = startTimestamp (contracts/LiquidityProtectionSingleLimitStrategy.sol#114)
+                - limit.amountLeftInCurrentPeriod = amountPerPeriod (contracts/LiquidityProtectionSingleLimitStrategy.sol#115)
+- Reentrancy in LiquidityProtectionSingleLimitStrategy.pause(address,address) (contracts/LiquidityProtectionSingleLimitStrategy.sol#74-80):
+        External calls:
+        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionSingleLimitStrategy.sol#74)
+                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
+        Event emitted after the call(s):
+        - Paused(token,protectedAddress) (contracts/LiquidityProtectionSingleLimitStrategy.sol#79)
+
+#### [`TreasuryProtectionStrategy.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/TreasuryProtectionStrategy.sol)
+- Reentrancy in TreasuryProtectionStrategy.removeProtectedAddresses(address,address[]) (contracts/TreasuryProtectionStrategy.sol#45-51):
+        External calls:
+        - onlyProtectionAdmin(token) (contracts/TreasuryProtectionStrategy.sol#45)
+                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
+        State variables written after the call(s):
+        - delete protectedAddresses[token].protection[addressesToRemove[i]] (contracts/TreasuryProtectionStrategy.sol#47)
+- Reentrancy in TreasuryProtectionStrategy.setProtectedAddress(address,address,address[]) (contracts/TreasuryProtectionStrategy.sol#36-42):
+        External calls:
+        - onlyProtectionAdmin(token) (contracts/TreasuryProtectionStrategy.sol#36)
+                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
+        State variables written after the call(s):
+        - protectedAddresses[token].protection[protectedAddress].whitelist[whitelist[i]] = true (contracts/TreasuryProtectionStrategy.sol#38)
+- Reentrancy in TreasuryProtectionStrategy.removeProtectedAddresses(address,address[]) (contracts/TreasuryProtectionStrategy.sol#45-51):
+        External calls:
+        - onlyProtectionAdmin(token) (contracts/TreasuryProtectionStrategy.sol#45)
+                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
+        Event emitted after the call(s):
+        - RemovedWhitelistAddresses(token,addressesToRemove) (contracts/TreasuryProtectionStrategy.sol#50)
+- Reentrancy in TreasuryProtectionStrategy.setProtectedAddress(address,address,address[]) (contracts/TreasuryProtectionStrategy.sol#36-42):
+        External calls:
+        - onlyProtectionAdmin(token) (contracts/TreasuryProtectionStrategy.sol#36)
+                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
+        Event emitted after the call(s):
+        - WhitelistAddresses(token,protectedAddress,whitelist) (contracts/TreasuryProtectionStrategy.sol#40)
+
+#### [`StrategyBase.sol`](https://github.com/pcaversaccio/lossless-v2/blob/master/contracts/StrategyBase.sol)
+- Reentrancy in StrategyBase.setGuardian(Guardian) (contracts/StrategyBase.sol#43-47):
+        External calls:
+        - require(bool,string)(msg.sender == controller.admin(),LOSSLESS: Not lossless admin) (contracts/StrategyBase.sol#44)
+        State variables written after the call(s):
+        - guardian = newGuardian (contracts/StrategyBase.sol#45)
+- Reentrancy in StrategyBase.setGuardian(Guardian) (contracts/StrategyBase.sol#43-47):
+        External calls:
+        - require(bool,string)(msg.sender == controller.admin(),LOSSLESS: Not lossless admin) (contracts/StrategyBase.sol#44)
+        Event emitted after the call(s):
+        - GuardianSet(address(newGuardian)) (contracts/StrategyBase.sol#46)
 
 
 ```bash
@@ -177,245 +349,6 @@ Warning: Unused function parameter. Remove or comment out the variable name to s
 151 |     function beforeTransferFrom(address msgSender, address sender, address recipient, uint256 amount) external {
     |                                 ^^^^^^^^^^^^^^^^^
 
-
-Reentrancy in LERC20.approve(address,uint256) (contracts/LERC20.sol#205-209):
-        External calls:
-        - lssAprove(spender,amount) (contracts/LERC20.sol#205)
-                - lossless.beforeApprove(_msgSender(),spender,amount) (contracts/LERC20.sol#83)
-        State variables written after the call(s):
-        - _approve(_msgSender(),spender,amount) (contracts/LERC20.sol#207)
-                - _allowances[owner][spender] = amount (contracts/LERC20.sol#258)
-Reentrancy in LERC20.decreaseAllowance(address,uint256) (contracts/LERC20.sol#226-232):
-        External calls:
-        - lssDecreaseAllowance(spender,subtractedValue) (contracts/LERC20.sol#226)
-                - lossless.beforeDecreaseAllowance(_msgSender(),spender,subtractedValue) (contracts/LERC20.sol#111)
-        State variables written after the call(s):
-        - _approve(_msgSender(),spender,currentAllowance - subtractedValue) (contracts/LERC20.sol#229)
-                - _allowances[owner][spender] = amount (contracts/LERC20.sol#258)
-Reentrancy in LERC20.increaseAllowance(address,uint256) (contracts/LERC20.sol#221-224):
-        External calls:
-        - lssIncreaseAllowance(spender,addedValue) (contracts/LERC20.sol#221)
-                - lossless.beforeIncreaseAllowance(_msgSender(),spender,addedValue) (contracts/LERC20.sol#104)
-        State variables written after the call(s):
-        - _approve(_msgSender(),spender,_allowances[_msgSender()][spender] + addedValue) (contracts/LERC20.sol#222)
-                - _allowances[owner][spender] = amount (contracts/LERC20.sol#258)
-Reentrancy in LERC20.transfer(address,uint256) (contracts/LERC20.sol#196-199):
-        External calls:
-        - lssTransfer(recipient,amount) (contracts/LERC20.sol#196)
-                - lossless.beforeTransfer(_msgSender(),recipient,amount) (contracts/LERC20.sol#90)
-        State variables written after the call(s):
-        - _transfer(_msgSender(),recipient,amount) (contracts/LERC20.sol#197)
-                - _balances[sender] = senderBalance - amount (contracts/LERC20.sol#240)
-                - _balances[recipient] += amount (contracts/LERC20.sol#241)
-Reentrancy in LERC20.transferFrom(address,address,uint256) (contracts/LERC20.sol#211-219):
-        External calls:
-        - lssTransferFrom(sender,recipient,amount) (contracts/LERC20.sol#211)
-                - lossless.beforeTransferFrom(_msgSender(),sender,recipient,amount) (contracts/LERC20.sol#97)
-        State variables written after the call(s):
-        - _approve(sender,_msgSender(),currentAllowance - amount) (contracts/LERC20.sol#216)
-                - _allowances[owner][spender] = amount (contracts/LERC20.sol#258)
-        - _transfer(sender,recipient,amount) (contracts/LERC20.sol#212)
-                - _balances[sender] = senderBalance - amount (contracts/LERC20.sol#240)
-                - _balances[recipient] += amount (contracts/LERC20.sol#241)
-Reentrancy in LosslessGuardian.verifyAddress(address,address,bool) (contracts/LosslessGuardian.sol#78-81):
-        External calls:
-        - onlyLosslessAdmin() (contracts/LosslessGuardian.sol#78)
-                - require(bool,string)(msg.sender == lossless.admin(),LOSSLESS: Not lossless admin) (contracts/LosslessGuardian.sol#41)
-        State variables written after the call(s):
-        - verifiedAddresses[token].verified[verifiedAddress] = value (contracts/LosslessGuardian.sol#79)
-Reentrancy in LosslessGuardian.verifyStrategies(address[],bool) (contracts/LosslessGuardian.sol#64-69):
-        External calls:
-        - onlyLosslessAdmin() (contracts/LosslessGuardian.sol#64)
-                - require(bool,string)(msg.sender == lossless.admin(),LOSSLESS: Not lossless admin) (contracts/LosslessGuardian.sol#41)
-        State variables written after the call(s):
-        - verifiedStrategies[strategies[i]] = value (contracts/LosslessGuardian.sol#66)
-Reentrancy in LosslessGuardian.verifyToken(address,bool) (contracts/LosslessGuardian.sol#72-75):
-        External calls:
-        - onlyLosslessAdmin() (contracts/LosslessGuardian.sol#72)
-                - require(bool,string)(msg.sender == lossless.admin(),LOSSLESS: Not lossless admin) (contracts/LosslessGuardian.sol#41)
-        State variables written after the call(s):
-        - verifiedTokens[token] = value (contracts/LosslessGuardian.sol#73)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-2
-
-Reentrancy in LiquidityProtectionMultipleLimitsStrategy.pause(address,address) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#67-81):
-        External calls:
-        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#67)
-                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
-        State variables written after the call(s):
-        - limits.push(cloneLimit(0,limits)) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#74)
-Reentrancy in LiquidityProtectionSingleLimitStrategy.pause(address,address) (contracts/LiquidityProtectionSingleLimitStrategy.sol#74-80):
-        External calls:
-        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionSingleLimitStrategy.sol#74)
-                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
-        State variables written after the call(s):
-        - limit.amountLeftInCurrentPeriod = 0 (contracts/LiquidityProtectionSingleLimitStrategy.sol#77)
-        - limit.lastCheckpointTime = type()(uint256).max - limit.periodInSeconds (contracts/LiquidityProtectionSingleLimitStrategy.sol#78)
-Reentrancy in LiquidityProtectionMultipleLimitsStrategy.removeLimits(address,address[]) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#58-63):
-        External calls:
-        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#58)
-                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
-        State variables written after the call(s):
-        - delete protection[token].limits[protectedAddresses[i]] (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#60)
-Reentrancy in LiquidityProtectionSingleLimitStrategy.removeLimits(address,address[]) (contracts/LiquidityProtectionSingleLimitStrategy.sol#64-69):
-        External calls:
-        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionSingleLimitStrategy.sol#64)
-                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
-        State variables written after the call(s):
-        - delete protection[token].limits[protectedAddresses[i]] (contracts/LiquidityProtectionSingleLimitStrategy.sol#66)
-Reentrancy in TreasuryProtectionStrategy.removeProtectedAddresses(address,address[]) (contracts/TreasuryProtectionStrategy.sol#45-51):
-        External calls:
-        - onlyProtectionAdmin(token) (contracts/TreasuryProtectionStrategy.sol#45)
-                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
-        State variables written after the call(s):
-        - delete protectedAddresses[token].protection[addressesToRemove[i]] (contracts/TreasuryProtectionStrategy.sol#47)
-Reentrancy in StrategyBase.setGuardian(Guardian) (contracts/StrategyBase.sol#43-47):
-        External calls:
-        - require(bool,string)(msg.sender == controller.admin(),LOSSLESS: Not lossless admin) (contracts/StrategyBase.sol#44)
-        State variables written after the call(s):
-        - guardian = newGuardian (contracts/StrategyBase.sol#45)
-Reentrancy in LiquidityProtectionSingleLimitStrategy.setLimit(address,address,uint256,uint256,uint256) (contracts/LiquidityProtectionSingleLimitStrategy.sol#52-62):       
-        External calls:
-        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionSingleLimitStrategy.sol#58)
-                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
-        State variables written after the call(s):
-        - saveLimit(token,protectedAddress,periodInSeconds,amountPerPeriod,startTimestamp) (contracts/LiquidityProtectionSingleLimitStrategy.sol#60)
-                - limit.periodInSeconds = periodInSeconds (contracts/LiquidityProtectionSingleLimitStrategy.sol#112)
-                - limit.amountPerPeriod = amountPerPeriod (contracts/LiquidityProtectionSingleLimitStrategy.sol#113)
-                - limit.lastCheckpointTime = startTimestamp (contracts/LiquidityProtectionSingleLimitStrategy.sol#114)
-                - limit.amountLeftInCurrentPeriod = amountPerPeriod (contracts/LiquidityProtectionSingleLimitStrategy.sol#115)
-Reentrancy in LiquidityProtectionSingleLimitStrategy.setLimitBatched(address,address[],uint256,uint256,uint256) (contracts/LiquidityProtectionSingleLimitStrategy.sol#37-48):
-        External calls:
-        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionSingleLimitStrategy.sol#43)
-                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
-        State variables written after the call(s):
-        - saveLimit(token,protectedAddresses[i],periodInSeconds,amountPerPeriod,startTimestamp) (contracts/LiquidityProtectionSingleLimitStrategy.sol#45)
-                - limit.periodInSeconds = periodInSeconds (contracts/LiquidityProtectionSingleLimitStrategy.sol#112)
-                - limit.amountPerPeriod = amountPerPeriod (contracts/LiquidityProtectionSingleLimitStrategy.sol#113)
-                - limit.lastCheckpointTime = startTimestamp (contracts/LiquidityProtectionSingleLimitStrategy.sol#114)
-                - limit.amountLeftInCurrentPeriod = amountPerPeriod (contracts/LiquidityProtectionSingleLimitStrategy.sol#115)
-Reentrancy in LiquidityProtectionMultipleLimitsStrategy.setLimits(address,address,uint256[],uint256[],uint256[]) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#27-36):
-        External calls:
-        - guardian.setProtectedAddress(token,protectedAddress) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#34)
-        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#33)
-                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
-        State variables written after the call(s):
-        - saveLimits(token,protectedAddress,periodsInSeconds,amountsPerPeriod,startTimestamp) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#35)
-                - limits.push(limit) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#138)
-Reentrancy in LiquidityProtectionMultipleLimitsStrategy.setLimitsBatched(address,address[],uint256[],uint256[],uint256[]) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#45-56):
-        External calls:
-        - guardian.setProtectedAddress(token,protectedAddresses[i]) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#53)
-        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#51)
-                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
-        State variables written after the call(s):
-        - saveLimits(token,protectedAddresses[i],periodsInSeconds,amountsPerPeriod,startTimestamp) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#54)
-                - limits.push(limit) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#138)
-Reentrancy in TreasuryProtectionStrategy.setProtectedAddress(address,address,address[]) (contracts/TreasuryProtectionStrategy.sol#36-42):
-        External calls:
-        - onlyProtectionAdmin(token) (contracts/TreasuryProtectionStrategy.sol#36)
-                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
-        State variables written after the call(s):
-        - protectedAddresses[token].protection[protectedAddress].whitelist[whitelist[i]] = true (contracts/TreasuryProtectionStrategy.sol#38)
-Reentrancy in LiquidityProtectionMultipleLimitsStrategy.unpause(address,address) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#85-96):
-        External calls:
-        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#85)
-                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
-        State variables written after the call(s):
-        - limits[0] = cloneLimit(limits.length - 1,limits) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#91)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-2
-
-Reentrancy in LERC20.approve(address,uint256) (contracts/LERC20.sol#205-209):
-        External calls:
-        - lssAprove(spender,amount) (contracts/LERC20.sol#205)
-                - lossless.beforeApprove(_msgSender(),spender,amount) (contracts/LERC20.sol#83)
-        Event emitted after the call(s):
-        - Approval(owner,spender,amount) (contracts/LERC20.sol#259)
-                - _approve(_msgSender(),spender,amount) (contracts/LERC20.sol#207)
-Reentrancy in LERC20.decreaseAllowance(address,uint256) (contracts/LERC20.sol#226-232):
-        External calls:
-        - lssDecreaseAllowance(spender,subtractedValue) (contracts/LERC20.sol#226)
-                - lossless.beforeDecreaseAllowance(_msgSender(),spender,subtractedValue) (contracts/LERC20.sol#111)
-        Event emitted after the call(s):
-        - Approval(owner,spender,amount) (contracts/LERC20.sol#259)
-                - _approve(_msgSender(),spender,currentAllowance - subtractedValue) (contracts/LERC20.sol#229)
-Reentrancy in LERC20.increaseAllowance(address,uint256) (contracts/LERC20.sol#221-224):
-        External calls:
-        - lssIncreaseAllowance(spender,addedValue) (contracts/LERC20.sol#221)
-                - lossless.beforeIncreaseAllowance(_msgSender(),spender,addedValue) (contracts/LERC20.sol#104)
-        Event emitted after the call(s):
-        - Approval(owner,spender,amount) (contracts/LERC20.sol#259)
-                - _approve(_msgSender(),spender,_allowances[_msgSender()][spender] + addedValue) (contracts/LERC20.sol#222)
-Reentrancy in LERC20.transfer(address,uint256) (contracts/LERC20.sol#196-199):
-        External calls:
-        - lssTransfer(recipient,amount) (contracts/LERC20.sol#196)
-                - lossless.beforeTransfer(_msgSender(),recipient,amount) (contracts/LERC20.sol#90)
-        Event emitted after the call(s):
-        - Transfer(sender,recipient,amount) (contracts/LERC20.sol#243)
-                - _transfer(_msgSender(),recipient,amount) (contracts/LERC20.sol#197)
-Reentrancy in LERC20.transferFrom(address,address,uint256) (contracts/LERC20.sol#211-219):
-        External calls:
-        - lssTransferFrom(sender,recipient,amount) (contracts/LERC20.sol#211)
-                - lossless.beforeTransferFrom(_msgSender(),sender,recipient,amount) (contracts/LERC20.sol#97)
-        Event emitted after the call(s):
-        - Approval(owner,spender,amount) (contracts/LERC20.sol#259)
-                - _approve(sender,_msgSender(),currentAllowance - amount) (contracts/LERC20.sol#216)
-        - Transfer(sender,recipient,amount) (contracts/LERC20.sol#243)
-                - _transfer(sender,recipient,amount) (contracts/LERC20.sol#212)
-Reentrancy in LosslessGuardian.verifyAddress(address,address,bool) (contracts/LosslessGuardian.sol#78-81):
-        External calls:
-        - onlyLosslessAdmin() (contracts/LosslessGuardian.sol#78)
-                - require(bool,string)(msg.sender == lossless.admin(),LOSSLESS: Not lossless admin) (contracts/LosslessGuardian.sol#41)
-        Event emitted after the call(s):
-        - AddressVerified(token,verifiedAddress,value) (contracts/LosslessGuardian.sol#80)
-Reentrancy in LosslessGuardian.verifyStrategies(address[],bool) (contracts/LosslessGuardian.sol#64-69):
-        External calls:
-        - onlyLosslessAdmin() (contracts/LosslessGuardian.sol#64)
-                - require(bool,string)(msg.sender == lossless.admin(),LOSSLESS: Not lossless admin) (contracts/LosslessGuardian.sol#41)
-        Event emitted after the call(s):
-        - StrategyVerified(strategies[i],value) (contracts/LosslessGuardian.sol#67)
-Reentrancy in LosslessGuardian.verifyToken(address,bool) (contracts/LosslessGuardian.sol#72-75):
-        External calls:
-        - onlyLosslessAdmin() (contracts/LosslessGuardian.sol#72)
-                - require(bool,string)(msg.sender == lossless.admin(),LOSSLESS: Not lossless admin) (contracts/LosslessGuardian.sol#41)
-        Event emitted after the call(s):
-        - TokenVerified(token,value) (contracts/LosslessGuardian.sol#74)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
-
-Reentrancy in LiquidityProtectionMultipleLimitsStrategy.pause(address,address) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#67-81):
-        External calls:
-        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#67)
-                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
-        Event emitted after the call(s):
-        - Paused(token,protectedAddress) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#80)
-Reentrancy in LiquidityProtectionSingleLimitStrategy.pause(address,address) (contracts/LiquidityProtectionSingleLimitStrategy.sol#74-80):
-        External calls:
-        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionSingleLimitStrategy.sol#74)
-                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
-        Event emitted after the call(s):
-        - Paused(token,protectedAddress) (contracts/LiquidityProtectionSingleLimitStrategy.sol#79)
-Reentrancy in TreasuryProtectionStrategy.removeProtectedAddresses(address,address[]) (contracts/TreasuryProtectionStrategy.sol#45-51):
-        External calls:
-        - onlyProtectionAdmin(token) (contracts/TreasuryProtectionStrategy.sol#45)
-                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
-        Event emitted after the call(s):
-        - RemovedWhitelistAddresses(token,addressesToRemove) (contracts/TreasuryProtectionStrategy.sol#50)
-Reentrancy in StrategyBase.setGuardian(Guardian) (contracts/StrategyBase.sol#43-47):
-        External calls:
-        - require(bool,string)(msg.sender == controller.admin(),LOSSLESS: Not lossless admin) (contracts/StrategyBase.sol#44)
-        Event emitted after the call(s):
-        - GuardianSet(address(newGuardian)) (contracts/StrategyBase.sol#46)
-Reentrancy in TreasuryProtectionStrategy.setProtectedAddress(address,address,address[]) (contracts/TreasuryProtectionStrategy.sol#36-42):
-        External calls:
-        - onlyProtectionAdmin(token) (contracts/TreasuryProtectionStrategy.sol#36)
-                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
-        Event emitted after the call(s):
-        - WhitelistAddresses(token,protectedAddress,whitelist) (contracts/TreasuryProtectionStrategy.sol#40)
-Reentrancy in LiquidityProtectionMultipleLimitsStrategy.unpause(address,address) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#85-96):
-        External calls:
-        - onlyProtectionAdmin(token) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#85)
-                - require(bool,string)(msg.sender == guardian.protectionAdmin(token),LOSSLESS: Not protection admin) (contracts/StrategyBase.sol#36)
-        Event emitted after the call(s):
-        - Unpaused(token,protectedAddress) (contracts/LiquidityProtectionMultipleLimitsStrategy.sol#95)
-Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
 
 LERC20.executeLosslessTurnOff() (contracts/LERC20.sol#160-166) uses timestamp for comparisons
         Dangerous comparisons:
